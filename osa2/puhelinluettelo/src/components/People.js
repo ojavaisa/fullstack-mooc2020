@@ -8,14 +8,14 @@ const Person = ({ person }) => {
     );
 };
 
-const Persons = ({ persons }) => {
+const People = ({ people }) => {
     return(
         <ul>
-            {persons.map(person =>
+            {people.map(person =>
                 <Person key={person.name} person={person} />
             )}
         </ul>
     );
 };
 
-export default Persons;
+export default People;
