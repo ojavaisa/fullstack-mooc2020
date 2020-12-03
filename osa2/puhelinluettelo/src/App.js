@@ -1,18 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import PersonForm from './components/PersonForm';
-import Filter from './components/Filter'
+import Filter from './components/Filter';
 import People from './components/People';
 
 const App = () => {
-    const [people, setPeople] = useState([
-        { name: 'Arto Hellas', number: '040-123456' },
-        { name: 'Ada Lovelace', number: '39-44-5323523' },
-        { name: 'Dan Abramov', number: '12-43-234345' },
-        { name: 'Mary Poppendieck', number: '39-23-6423122' }
-    ]);
+    const [people, setPeople] = useState([]);
     const [newName, setNewName] = useState('');
     const [newNumber, setNewNumber] = useState('');
     const [filterString, setFilterString] = useState('');
+
+    useEffect(() => {
+        //console.log('effect');
+        axios
+            .get('http://localhost:3001/persons')
+            .then(response => {
+                //console.log('promise fulfilled');
+                setPeople(response.data)
+            })
+    }, []);
+    //console.log('render', people.length, 'people');
 
     const addPerson = (event) => {
         event.preventDefault();
@@ -57,7 +64,7 @@ const App = () => {
             <Filter filterString={filterString} filterPeople={filterPeople} />
 
             <h3>Add a new person</h3>
-            <PersonForm 
+            <PersonForm
                 addPerson={addPerson}
                 newName={newName}
                 handleNameChange={handleNameChange}
