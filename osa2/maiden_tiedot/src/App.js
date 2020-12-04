@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Filter from './components/Filter';
-import Countries from './components/Countries'
+import Countries from './components/Countries';
 
 const App = () => {
     const [filterString, setFilterString] = useState('');
     const [countries, setCountries] = useState([]);
+    const [countryClicked, setClicked] = useState('');
 
     useEffect(() => {
-        console.log('effect');
+        //console.log('effect');
         axios
             .get('https://restcountries.eu/rest/v2/all')
             .then(response => {
-                console.log('promise fulfilled');
+                //console.log('promise fulfilled');
                 setCountries(response.data);
             });
     }, []);
@@ -21,12 +22,22 @@ const App = () => {
 
     const filterCountries = (event) => {
         setFilterString(event.target.value);
+        setClicked('');
     };
 
-    const countriesToShow = (filterString.length > 0)
-        ? countries.filter(country =>
-            country.name.toLowerCase().includes(filterString.toLowerCase()))
-        : countries;
+    const showCountryCliked = (event) => {
+        //console.log('Clicked! ', event);
+        setClicked(event);
+        setFilterString('');
+    };
+
+    const countriesToShow = (countryClicked.length === 0)
+        ? ((filterString.length > 0) //if no country clicked, filter by filterString
+            ? countries.filter(country =>
+                country.name.toLowerCase().includes(filterString.toLowerCase()))
+            : countries)
+        : countries.filter(country => country.alpha3Code === countryClicked);
+    // console.log(countriesToShow);
 
     return (
         <div>
@@ -34,7 +45,7 @@ const App = () => {
 
             <Filter filterString={filterString} filterCountries={filterCountries} />
 
-            <Countries countries={countriesToShow} />
+            <Countries countries={countriesToShow} showCountry={showCountryCliked} />
             {/* <div>debug {countriesToShow.length}</div> */}
         </div>
     );

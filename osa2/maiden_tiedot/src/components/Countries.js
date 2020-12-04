@@ -1,8 +1,8 @@
 import React from 'react';
 
-const CountryLine = ({ country }) => {
+const CountryLine = ({ country, showCountry }) => {
     return (
-        <li> {country.name} </li>
+        <li> {country.name} <button onClick={showCountry}>Show</button></li>
     );
 };
 
@@ -18,12 +18,12 @@ const Country = ({ country }) => {
                 {country.languages.map(lang => 
                     <li key={lang.iso639_2}>{lang.name}</li>)}
             </ul>
-            <img src={country.flag} alt="flag" width="200"/>
+            <img src={country.flag} alt='flag of {country.name}' width="200"/>
         </div>
     );
 };
 
-const Countries = ({ countries }) => {
+const Countries = ({ countries, showCountry }) => {
     if (countries.length > 10) {
         return (
             <div>
@@ -34,7 +34,7 @@ const Countries = ({ countries }) => {
         return (
             <ul>
                 {countries.map(country =>
-                    <CountryLine key={country.alpha3Code} country={country} />)}
+                    <CountryLine key={country.alpha3Code} country={country} showCountry={() => showCountry(country.alpha3Code)} />)}
             </ul>
         );
     } else if (countries.length === 1) {
