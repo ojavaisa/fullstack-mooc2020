@@ -1,4 +1,5 @@
 import React from 'react';
+import CityWeather from './CityWeather'
 
 const CountryLine = ({ country, showCountry }) => {
     return (
@@ -7,6 +8,7 @@ const CountryLine = ({ country, showCountry }) => {
 };
 
 const Country = ({ country }) => {
+    
     return (
         <div>
             <h2>{country.name}</h2>
@@ -15,10 +17,12 @@ const Country = ({ country }) => {
 
             <h3>Languages</h3>
             <ul>
-                {country.languages.map(lang => 
+                {country.languages.map(lang =>
                     <li key={lang.iso639_2}>{lang.name}</li>)}
             </ul>
-            <img src={country.flag} alt='flag of {country.name}' width="200"/>
+            <img src={country.flag} alt='flag of {country.name}' width="200" />
+
+            <CityWeather city={country.capital}/>
         </div>
     );
 };
@@ -40,7 +44,7 @@ const Countries = ({ countries, showCountry }) => {
     } else if (countries.length === 1) {
         return (
             <div>
-                <Country country={countries[0]}/>
+                <Country country={countries[0]} />
             </div>
         );
     } else {
