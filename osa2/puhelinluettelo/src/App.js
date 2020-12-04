@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import PersonForm from './components/PersonForm';
 import Filter from './components/Filter';
 import People from './components/People';
+import personsService from './services/persons';
 
 const App = () => {
     const [people, setPeople] = useState([]);
@@ -12,12 +12,14 @@ const App = () => {
 
     useEffect(() => {
         //console.log('effect');
-        axios
-            .get('http://localhost:3001/persons')
-            .then(response => {
-                //console.log('promise fulfilled');
-                setPeople(response.data)
+        personsService
+            .getAll()
+            .then(initialPeople => {
+                setPeople(initialPeople);
             })
+            .catch(error => {
+                console.log('There was an error getting initial people');
+            });
     }, []);
     //console.log('render', people.length, 'people');
 
@@ -32,9 +34,16 @@ const App = () => {
                 name: newName,
                 number: newNumber
             };
-            setPeople(people.concat(personObject));
-            setNewName('');
-            setNewNumber('');
+            personsService
+                .create(personObject)
+                .then(returnedPerson => {
+                    setPeople(people.concat(personObject));
+                    setNewName('');
+                    setNewNumber('');
+                })
+                .catch(error => {
+                    console.log('There was an error in posting new person.');
+                });
         }
     };
 
