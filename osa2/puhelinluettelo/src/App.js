@@ -3,12 +3,14 @@ import PersonForm from './components/PersonForm';
 import Filter from './components/Filter';
 import People from './components/People';
 import personsService from './services/persons';
+import Notification from './components/Notification'
 
 const App = () => {
     const [people, setPeople] = useState([]);
     const [newName, setNewName] = useState('');
     const [newNumber, setNewNumber] = useState('');
     const [filterString, setFilterString] = useState('');
+    const [showMessage, setMessage] = useState(null);
 
     useEffect(() => {
         //console.log('effect');
@@ -32,7 +34,13 @@ const App = () => {
                 personsService
                     .update(personToUpdate.id, updatedPerson)
                     .then(returnedPerson => {
-                        setPeople(people.map(person => person.id !== personToUpdate.id ? person : returnedPerson))
+                        setPeople(people.map(person => person.id !== personToUpdate.id ? person : returnedPerson));
+                        setMessage(
+                            `Number for ${returnedPerson.name} updated successfully`
+                        );
+                        setTimeout(() => {
+                            setMessage(null);
+                        }, 3000);
                     })
                     .catch(error => {
                         console.log('There was an error in updating persons number');
@@ -51,6 +59,12 @@ const App = () => {
                     setPeople(people.concat(returnedPerson));
                     setNewName('');
                     setNewNumber('');
+                    setMessage(
+                        `${returnedPerson.name} added successfully`
+                    );
+                    setTimeout(() => {
+                        setMessage(null);
+                    }, 3000);
                 })
                 .catch(error => {
                     console.log('There was an error in posting new person.');
@@ -66,6 +80,12 @@ const App = () => {
                 .then(() => {
                     //console.log(response);
                     setPeople(people.filter(person => person.id !== personToDelete.id));
+                    setMessage(
+                        `${personToDelete.name} deleted successfully`
+                    );
+                    setTimeout(() => {
+                        setMessage(null);
+                    }, 3000);
                 })
                 .catch(error => {
                     console.log('There was an error deleting person');
@@ -95,6 +115,8 @@ const App = () => {
     return (
         <div>
             <h2>Phonebook</h2>
+
+            <Notification message={showMessage} />
 
             <Filter filterString={filterString} filterPeople={filterPeople} />
 
