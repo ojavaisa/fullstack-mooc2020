@@ -11,6 +11,7 @@ const App = () => {
     const [newNumber, setNewNumber] = useState('');
     const [filterString, setFilterString] = useState('');
     const [showMessage, setMessage] = useState(null);
+    const [errorMessage, setErrorMsg] = useState(null)
 
     useEffect(() => {
         //console.log('effect');
@@ -43,7 +44,14 @@ const App = () => {
                         }, 3000);
                     })
                     .catch(error => {
-                        console.log('There was an error in updating persons number');
+                        console.log('Error: ', error);
+                        setErrorMsg(
+                            `Information for ${personToUpdate.name} has already been removed from server`
+                        );
+                        setTimeout(() => {
+                            setErrorMsg(null);
+                        }, 3000);
+                        setPeople(people.filter(person => person.id !== personToUpdate.id));
                     })
             }
             setNewName('');
@@ -116,7 +124,8 @@ const App = () => {
         <div>
             <h2>Phonebook</h2>
 
-            <Notification message={showMessage} />
+            <Notification message={showMessage} msgColor='green'/>
+            <Notification message={errorMessage} msgColor='red' />
 
             <Filter filterString={filterString} filterPeople={filterPeople} />
 
