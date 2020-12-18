@@ -44,14 +44,12 @@ const App = () => {
                         }, 3000);
                     })
                     .catch(error => {
-                        console.log('Error: ', error);
-                        setErrorMsg(
-                            `Information for ${personToUpdate.name} has already been removed from server`
-                        );
+                        console.log('Error: ', error.response.data);
+                        setErrorMsg(error.response.data.error);
                         setTimeout(() => {
                             setErrorMsg(null);
                         }, 3000);
-                        setPeople(people.filter(person => person.id !== personToUpdate.id));
+                        setPeople(people);
                     })
             }
             setNewName('');
@@ -75,7 +73,11 @@ const App = () => {
                     }, 3000);
                 })
                 .catch(error => {
-                    console.log('There was an error in posting new person.');
+                    console.log('Error: ', error.response.data);
+                        setErrorMsg(error.response.data.error);
+                        setTimeout(() => {
+                            setErrorMsg(null);
+                        }, 3000);
                 });
         }
     };
