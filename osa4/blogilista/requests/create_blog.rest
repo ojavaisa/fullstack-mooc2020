@@ -1,0 +1,9 @@
+POST http://localhost:3001/api/blogs
+Content-Type: application/json
+
+{
+  "title": "Food blog",
+  "author": "Kokki Kolmonen",
+  "url": "www.foodblog.com",
+  "likes": 3
+}
