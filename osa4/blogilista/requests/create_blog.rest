@@ -7,3 +7,15 @@ Content-Type: application/json
   "url": "www.foodblog.com",
   "likes": 3
 }
+
+###
+
+POST http://localhost:3001/api/blogs
+Content-Type: application/json
+
+{
+  "title": "Movie blog",
+  "author": "Roger Ebert",
+  "url": "www.movieblog.com",
+  "likes": 3
+}
