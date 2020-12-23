@@ -1,11 +1,11 @@
-const config = require('./utils/config');
+const config = require('./utils/config'); //configuration things, db url etc.
 const express = require('express');
 const app = express();
-const cors = require('cors');
-const blogsRouter = require('./controllers/blogs');
-const middleware = require('./utils/middleware');
-const mongoose = require('mongoose');
-const logger = require('./utils/logger');
+const cors = require('cors'); //enables cross origin resources, if frontend and backend need to be run in different ports
+const blogsRouter = require('./controllers/blogs'); //module for resolving routes
+const middleware = require('./utils/middleware'); //module of custom made middlewares
+const mongoose = require('mongoose'); //MongoDB utility
+const logger = require('./utils/logger'); //module for console logging
 
 const mongoUrl = config.MONGODB_URI;
 
