@@ -108,6 +108,34 @@ test('blog without likes gets zero as default', async () => {
   expect(response.body.likes).toEqual(0);
 });
 
+test('blog without title is not added', async () => {
+  const newBlog = {
+    author: 'Max Ogden',
+    url: 'http://callbackhell.com/',
+    likes: 5
+  };
+
+  await api.post('/api/blogs').send(newBlog)
+    .expect(400);  // 'Bad request'
+
+  const response = await api.get('/api/blogs');
+  expect(response.body).toHaveLength(initialBlogs.length);
+});
+
+test('blog without url is not added', async () => {
+  const newBlog = {
+    title: 'Callback Hell',
+    author: 'Max Ogden',
+    likes: 5
+  };
+
+  await api.post('/api/blogs').send(newBlog)
+    .expect(400);  // 'Bad request'
+
+  const response = await api.get('/api/blogs');
+  expect(response.body).toHaveLength(initialBlogs.length);
+});
+
 afterAll(() => {
   mongoose.connection.close();
 });
