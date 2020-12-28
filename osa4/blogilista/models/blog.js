@@ -13,7 +13,10 @@ const blogSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  likes: Number
+  likes: {
+    type: Number,
+    default: 0  //if likes are not given, set to zero by default
+  }
 });
 
 blogSchema.set('toJSON', {  //modify the models' toJSON method to turn id to a better form and delete MongoDB version information

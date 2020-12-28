@@ -6,7 +6,7 @@ blogsRouter.get('/', async (request, response) => {
   response.json(blogs.map(blog => blog.toJSON()));
 });
 
-blogsRouter.post('/', (request, response, next) => {
+blogsRouter.post('/', async (request, response) => {  //next no longer required, thanks to express-async-errors
   const body = request.body;
 
   const blog = new Blog({
@@ -16,11 +16,24 @@ blogsRouter.post('/', (request, response, next) => {
     likes: body.likes
   });
 
-  blog.save()
+  //implementation with promises:
+  /* blog.save()
     .then(result => {
       response.status(201).json(result.toJSON());
     })
-    .catch(error => next(error));
+    .catch(error => next(error)); */
+
+  //implementation with async/await, but error handling with try-catch:
+  /* try {
+    const savedBlog = await blog.save();
+    response.json(savedBlog.toJSON());
+  } catch(exception) {
+    next(exception);
+  } */
+
+  //implementation with express-async-errors library
+  const savedBlog = await blog.save();
+  response.json(savedBlog.toJSON());
 });
 
 module.exports = blogsRouter;

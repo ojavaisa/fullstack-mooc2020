@@ -26,5 +26,16 @@ POST http://localhost:3001/api/blogs
 Content-Type: application/json
 
 {
+  "title": "Blog nobody likes",
+  "author": "Writer nobody likes",
+  "url": "www.zerolikesblog.com"
+}
+
+###
+
+POST http://localhost:3001/api/blogs
+Content-Type: application/json
+
+{
   "testi": "Testing wrong blog"
 }

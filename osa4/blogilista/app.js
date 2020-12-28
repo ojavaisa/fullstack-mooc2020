@@ -1,5 +1,6 @@
 const config = require('./utils/config'); //configuration things, db url etc.
 const express = require('express');
+require('express-async-errors'); //pass errors from async functions automatically to errorhandling middleware, no need for try-catch
 const app = express();
 const cors = require('cors'); //enables cross origin resources, if frontend and backend need to be run in different ports
 const blogsRouter = require('./controllers/blogs'); //module for resolving routes

@@ -53,7 +53,7 @@ beforeEach(async () => {
 
 test('blog entries are returned as JSON', async () => {
   await api.get('/api/blogs')
-    .expect(200)
+    .expect(200)  // 'OK'
     .expect('Content-Type', /application\/json/); // /.../ defines a regular expression, \/ is an escaped character /
 });
 
@@ -67,6 +67,45 @@ test('blog id field is named correctly', async () => {
   const response = await api.get('/api/blogs');
 
   expect(response.body[0].id).toBeDefined();
+});
+
+test('a new blog can be added', async () => {
+  const newBlog = {
+    title: 'Callback Hell',
+    author: 'Max Ogden',
+    url: 'http://callbackhell.com/',
+    likes: 5
+  };
+
+  await api.post('/api/blogs').send(newBlog)
+    .expect(200)  // 'OK'
+    .expect('Content-Type', /application\/json/);
+
+  const response = await api.get('/api/blogs');
+  const titles = response.body.map(blog => blog.title);
+  const urls = response.body.map(blog => blog.url);
+
+  expect(response.body).toHaveLength(initialBlogs.length + 1);
+  expect(titles).toContain(
+    'Callback Hell'
+  );
+  expect(urls).toContain(
+    'http://callbackhell.com/'
+  );
+});
+
+test('blog without likes gets zero as default', async () => {
+  const newBlog = {
+    title: 'Callback Hell',
+    author: 'Max Ogden',
+    url: 'http://callbackhell.com/'
+  };
+
+  const response = await api.post('/api/blogs').send(newBlog)
+    .expect(200)  // 'OK'
+    .expect('Content-Type', /application\/json/);
+
+  expect(response.body.likes).toEqual(0);
 });
 
 afterAll(() => {
