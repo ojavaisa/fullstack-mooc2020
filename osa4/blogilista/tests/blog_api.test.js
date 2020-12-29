@@ -1,139 +1,161 @@
 const mongoose = require('mongoose');
 const supertest = require('supertest');
+const helper = require('./test_helper');
 const app = require('../app');
 const api = supertest(app);
+
 const Blog = require('../models/blog');
 
-const initialBlogs = [
-  {
-    title: 'React patterns',
-    author: 'Michael Chan',
-    url: 'https://reactpatterns.com/',
-    likes: 7
-  },
-  {
-    title: 'Go To Statement Considered Harmful',
-    author: 'Edsger W. Dijkstra',
-    url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-    likes: 5
-  },
-  {
-    title: 'Canonical string reduction',
-    author: 'Edsger W. Dijkstra',
-    url: 'http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html',
-    likes: 12
-  },
-  {
-    title: 'First class tests',
-    author: 'Robert C. Martin',
-    url: 'http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll',
-    likes: 10
-  },
-  {
-    title: 'TDD harms architecture',
-    author: 'Robert C. Martin',
-    url: 'http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html',
-    likes: 0
-  },
-  {
-    title: 'Type wars',
-    author: 'Robert C. Martin',
-    url: 'http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html',
-    likes: 2
-  }
-];
 beforeEach(async () => {
   await Blog.deleteMany({});
 
   // const blogObjects = initialBlogs.map(blog => new Blog(blog));
   // const promiseArray = blogObjects.map(blog => blog.save());
   // await Promise.all(promiseArray);
-  await Blog.insertMany(initialBlogs);  // do the above more easily with mongoose's insertMany method... xD
+  await Blog.insertMany(helper.initialBlogs);  // do the above more easily with mongoose's insertMany method... xD
 });
 
-test('blog entries are returned as JSON', async () => {
-  await api.get('/api/blogs')
-    .expect(200)  // 'OK'
-    .expect('Content-Type', /application\/json/); // /.../ defines a regular expression, \/ is an escaped character /
+describe('when getting initial blogs already saved', () => {
+  test('blog entries are returned as JSON', async () => {
+    await api.get('/api/blogs')
+      .expect(200)  // 'OK'
+      .expect('Content-Type', /application\/json/); // /.../ defines a regular expression, \/ is an escaped character /
+  });
+
+  test('all blogs are returned', async () => {
+    const response = await api.get('/api/blogs');
+
+    expect(response.body).toHaveLength(helper.initialBlogs.length);
+  });
+
+  test('blog id field is named correctly', async () => {
+    const response = await api.get('/api/blogs');
+
+    expect(response.body[0].id).toBeDefined();
+  });
 });
 
-test('all blogs are returned', async () => {
-  const response = await api.get('/api/blogs');
+describe('when adding a new blog', () => {
+  test('a blog with valid fields can be added', async () => {
+    const newBlog = {
+      title: 'Callback Hell',
+      author: 'Max Ogden',
+      url: 'http://callbackhell.com/',
+      likes: 5
+    };
 
-  expect(response.body).toHaveLength(initialBlogs.length);
+    await api.post('/api/blogs').send(newBlog)
+      .expect(200)  // 'OK'
+      .expect('Content-Type', /application\/json/);
+
+    const response = await api.get('/api/blogs');
+    const titles = response.body.map(blog => blog.title);
+    const urls = response.body.map(blog => blog.url);
+
+    expect(response.body).toHaveLength(helper.initialBlogs.length + 1);
+    expect(titles).toContain(
+      'Callback Hell'
+    );
+    expect(urls).toContain(
+      'http://callbackhell.com/'
+    );
+  });
+
+  test('blog without likes gets zero as default', async () => {
+    const newBlog = {
+      title: 'Callback Hell',
+      author: 'Max Ogden',
+      url: 'http://callbackhell.com/'
+    };
+
+    const response = await api.post('/api/blogs').send(newBlog)
+      .expect(200)  // 'OK'
+      .expect('Content-Type', /application\/json/);
+
+    expect(response.body.likes).toEqual(0);
+  });
+
+  test('blog without title is not added', async () => {
+    const newBlog = {
+      author: 'Max Ogden',
+      url: 'http://callbackhell.com/',
+      likes: 5
+    };
+
+    await api.post('/api/blogs').send(newBlog)
+      .expect(400);  // 'Bad request'
+
+    const response = await api.get('/api/blogs');
+    expect(response.body).toHaveLength(helper.initialBlogs.length);
+  });
+
+  test('blog without url is not added', async () => {
+    const newBlog = {
+      title: 'Callback Hell',
+      author: 'Max Ogden',
+      likes: 5
+    };
+
+    await api.post('/api/blogs').send(newBlog)
+      .expect(400);  // 'Bad request'
+
+    const response = await api.get('/api/blogs');
+    expect(response.body).toHaveLength(helper.initialBlogs.length);
+  });
 });
 
-test('blog id field is named correctly', async () => {
-  const response = await api.get('/api/blogs');
+describe('deleting a blog', () => {
+  test('succeeds with valid id', async () => {
+    let response = await api.get('/api/blogs');
+    const blogsAtStart = response.body;
+    const blogToDelete = blogsAtStart[0];
 
-  expect(response.body[0].id).toBeDefined();
-});
+    await api.delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204);
 
-test('a new blog can be added', async () => {
-  const newBlog = {
-    title: 'Callback Hell',
-    author: 'Max Ogden',
-    url: 'http://callbackhell.com/',
-    likes: 5
-  };
+    response = await api.get('/api/blogs');
+    const blogsAtEnd = response.body;
 
-  await api.post('/api/blogs').send(newBlog)
-    .expect(200)  // 'OK'
-    .expect('Content-Type', /application\/json/);
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length - 1);
 
-  const response = await api.get('/api/blogs');
-  const titles = response.body.map(blog => blog.title);
-  const urls = response.body.map(blog => blog.url);
+    const titles = blogsAtEnd.map(blog => blog.title);
+    expect(titles).not.toContain(blogToDelete.title);
+  });
 
-  expect(response.body).toHaveLength(initialBlogs.length + 1);
-  expect(titles).toContain(
-    'Callback Hell'
-  );
-  expect(urls).toContain(
-    'http://callbackhell.com/'
-  );
-});
+  test('does nothing with valid id, but nonexistent', async () => {
+    let response = await api.get('/api/blogs');
+    const blogsAtStart = response.body;
+    const titlesAtStart = blogsAtStart.map(blog => blog.title);
 
-test('blog without likes gets zero as default', async () => {
-  const newBlog = {
-    title: 'Callback Hell',
-    author: 'Max Ogden',
-    url: 'http://callbackhell.com/'
-  };
+    await api.delete(`/api/blogs/${helper.nonExistentId}`)
+      .expect(404); //'Not found'
 
-  const response = await api.post('/api/blogs').send(newBlog)
-    .expect(200)  // 'OK'
-    .expect('Content-Type', /application\/json/);
+    response = await api.get('/api/blogs');
+    const blogsAtEnd = response.body;
 
-  expect(response.body.likes).toEqual(0);
-});
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
 
-test('blog without title is not added', async () => {
-  const newBlog = {
-    author: 'Max Ogden',
-    url: 'http://callbackhell.com/',
-    likes: 5
-  };
+    const titlesAtEnd = blogsAtEnd.map(blog => blog.title);
+    expect(titlesAtEnd).toEqual(titlesAtStart);
+  });
 
-  await api.post('/api/blogs').send(newBlog)
-    .expect(400);  // 'Bad request'
+  test('returns correct status code and does nothing else with incorrectly formatted id', async () => {
+    let response = await api.get('/api/blogs');
+    const blogsAtStart = response.body;
+    const titlesAtStart = blogsAtStart.map(blog => blog.title);
+    const totallyWrongId = '123456';
 
-  const response = await api.get('/api/blogs');
-  expect(response.body).toHaveLength(initialBlogs.length);
-});
+    await api.delete(`/api/blogs/${totallyWrongId}`)
+      .expect(400); //'Bad request'
 
-test('blog without url is not added', async () => {
-  const newBlog = {
-    title: 'Callback Hell',
-    author: 'Max Ogden',
-    likes: 5
-  };
+    response = await api.get('/api/blogs');
+    const blogsAtEnd = response.body;
 
-  await api.post('/api/blogs').send(newBlog)
-    .expect(400);  // 'Bad request'
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
 
-  const response = await api.get('/api/blogs');
-  expect(response.body).toHaveLength(initialBlogs.length);
+    const titlesAtEnd = blogsAtEnd.map(blog => blog.title);
+    expect(titlesAtEnd).toEqual(titlesAtStart);
+  });
 });
 
 afterAll(() => {
