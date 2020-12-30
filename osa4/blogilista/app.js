@@ -3,7 +3,8 @@ const express = require('express');
 require('express-async-errors'); //pass errors from async functions automatically to errorhandling middleware, no need for try-catch
 const app = express();
 const cors = require('cors'); //enables cross origin resources, if frontend and backend need to be run in different ports
-const blogsRouter = require('./controllers/blogs'); //module for resolving routes
+const blogsRouter = require('./controllers/blogs'); //module for resolving routes (for blogs)
+const usersRouter = require('./controllers/users');  //module for handling users
 const middleware = require('./utils/middleware'); //module of custom made middlewares
 const mongoose = require('mongoose'); //MongoDB utility
 const logger = require('./utils/logger'); //module for console logging
@@ -25,6 +26,7 @@ app.use(express.json());
 app.use(middleware.requestLogger);
 
 app.use('/api/blogs', blogsRouter);
+app.use('/api/users', usersRouter);
 
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);

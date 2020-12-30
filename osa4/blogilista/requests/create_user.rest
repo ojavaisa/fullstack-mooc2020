@@ -1,0 +1,28 @@
+POST http://localhost:3001/api/users
+Content-Type: application/json
+
+{
+  "name": "Mauri Ernesti",
+  "username": "mauriernesti",
+  "password": "topsecret"
+}
+
+###
+
+POST http://localhost:3001/api/users
+Content-Type: application/json
+
+{
+  "name": "Olli Väisänen",
+  "username": "ojavaisa",
+  "password": "password1"
+}
+
+###
+
+POST http://localhost:3001/api/users
+Content-Type: application/json
+
+{
+  "testi": "Testing wrong blog"
+}
