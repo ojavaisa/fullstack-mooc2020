@@ -24,5 +24,15 @@ POST http://localhost:3001/api/users
 Content-Type: application/json
 
 {
-  "testi": "Testing wrong blog"
+  "testi": "Testing wrong user"
+}
+
+###
+
+POST http://localhost:3001/api/users
+Content-Type: application/json
+
+{
+  "password": "loytyy",
+  "username": "su"
 }
