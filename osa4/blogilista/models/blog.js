@@ -16,6 +16,10 @@ const blogSchema = new mongoose.Schema({
   likes: {
     type: Number,
     default: 0  //if likes are not given, set to zero by default
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }
 });
 
