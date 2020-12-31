@@ -1,4 +1,5 @@
 const blogsRouter = require('express').Router();
+const jwt = require('jsonwebtoken');
 const Blog = require('../models/blog');
 const User = require('../models/user');
 
@@ -11,8 +12,12 @@ blogsRouter.get('/', async (request, response) => {
 blogsRouter.post('/', async (request, response) => {  //next no longer required, thanks to express-async-errors
   const body = request.body;
 
-  const users = await User.find({});
-  const user = users[0];
+  const decodedToken = jwt.verify(request.token, process.env.SECRET);
+  if (!request.token || !decodedToken.id) { //if there is no token (extracted in middleware) or decoded token object doesn't contain id return error
+    return response.status(401).json({ error: 'token missing or invalid' });
+  }
+
+  const user = await User.findById(decodedToken.id);  //id saved in login controller is the db assigned id object
 
   const blog = new Blog({
     title: body.title,
@@ -47,8 +52,19 @@ blogsRouter.post('/', async (request, response) => {  //next no longer required,
 });
 
 blogsRouter.delete('/:id', async (request, response) => {
-  await Blog.findByIdAndRemove(request.params.id);
-  response.status(204).end();
+  const blog = await Blog.findById(request.params.id);
+
+  //verify token of request sender
+  const decodedToken = jwt.verify(request.token, process.env.SECRET);
+  if (!request.token || !decodedToken.id) { //if there is no token (extracted in middleware) or decoded token object doesn't contain id return error
+    return response.status(401).json({ error: 'token missing or invalid' });
+  } else if (blog.user.toString() === decodedToken.id.toString()) {
+    await Blog.findByIdAndRemove(request.params.id);
+    return response.status(204).end();
+  } else {
+    return response.status(401).json({ error: 'wrong user' });
+  }
+
 });
 
 module.exports = blogsRouter;
