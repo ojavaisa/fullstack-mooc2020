@@ -11,6 +11,9 @@ const favoriteBlog = (blogs) => { //return blog with most likes, returns empty o
 };
 
 const mostBlogs = (blogs) => {
+  if(blogs.length === 0) {
+    return {};
+  }
   const blogCounts = _.countBy(blogs, 'author');  //lodash: count objects by 'author' attribute, returns object that has author names as keys and counts as values
   const blogCountsObjs = _.map(blogCounts,
     (val, key) => ({ author: key, blogs: val }) );  //turn previous object into objects with author names and blogcounts
