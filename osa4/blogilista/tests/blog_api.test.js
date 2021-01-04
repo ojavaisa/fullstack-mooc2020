@@ -5,6 +5,30 @@ const app = require('../app');
 const api = supertest(app);
 
 const Blog = require('../models/blog');
+const User = require('../models/user');
+
+let token;
+
+beforeAll(async () => {
+  await User.deleteMany({});
+
+  const testUser = {
+    username: 'testuser',
+    password: 'abcd1234',
+    name: 'Test User'
+  };
+
+  await api.post('/api/users').send(testUser);
+  //console.log(savedUser.body);
+
+  const loggedInUser = await api.post('/api/login').send({
+    username: 'testuser',
+    password: 'abcd1234'
+  });
+  //console.log(loggedInUser.body);
+  token = loggedInUser.body.token;
+  //console.log(token);
+});
 
 beforeEach(async () => {
   await Blog.deleteMany({});
@@ -36,125 +60,204 @@ describe('when getting initial blogs already saved', () => {
 });
 
 describe('when adding a new blog', () => {
-  test('a blog with valid fields can be added', async () => {
-    const newBlog = {
-      title: 'Callback Hell',
-      author: 'Max Ogden',
-      url: 'http://callbackhell.com/',
-      likes: 5
-    };
+  describe('with a valid login', () => {
 
-    await api.post('/api/blogs').send(newBlog)
-      .expect(200)  // 'OK'
-      .expect('Content-Type', /application\/json/);
+    test('a blog with valid fields can be added', async () => {
+      const newBlog = {
+        title: 'Callback Hell',
+        author: 'Max Ogden',
+        url: 'http://callbackhell.com/',
+        likes: 5
+      };
 
-    const response = await api.get('/api/blogs');
-    const titles = response.body.map(blog => blog.title);
-    const urls = response.body.map(blog => blog.url);
+      await api.post('/api/blogs')
+        .set('Authorization', `bearer ${token}`)
+        .send(newBlog)
+        .expect(200)  // 'OK'
+        .expect('Content-Type', /application\/json/);
 
-    expect(response.body).toHaveLength(helper.initialBlogs.length + 1);
-    expect(titles).toContain(
-      'Callback Hell'
-    );
-    expect(urls).toContain(
-      'http://callbackhell.com/'
-    );
+      const response = await api.get('/api/blogs');
+      const titles = response.body.map(blog => blog.title);
+      const urls = response.body.map(blog => blog.url);
+
+      expect(response.body).toHaveLength(helper.initialBlogs.length + 1);
+      expect(titles).toContain(
+        'Callback Hell'
+      );
+      expect(urls).toContain(
+        'http://callbackhell.com/'
+      );
+    });
+
+    test('blog without likes gets zero as default', async () => {
+      const newBlog = {
+        title: 'Callback Hell',
+        author: 'Max Ogden',
+        url: 'http://callbackhell.com/'
+      };
+
+      const response = await api.post('/api/blogs')
+        .set('Authorization', `bearer ${token}`)
+        .send(newBlog)
+        .expect(200)  // 'OK'
+        .expect('Content-Type', /application\/json/);
+
+      expect(response.body.likes).toEqual(0);
+    });
+
+    test('blog without title is not added', async () => {
+      const newBlog = {
+        author: 'Max Ogden',
+        url: 'http://callbackhell.com/',
+        likes: 5
+      };
+
+      await api.post('/api/blogs')
+        .set('Authorization', `bearer ${token}`)
+        .send(newBlog)
+        .expect(400);  // 'Bad request'
+
+      const response = await api.get('/api/blogs');
+      expect(response.body).toHaveLength(helper.initialBlogs.length);
+    });
+
+    test('blog without url is not added', async () => {
+      const newBlog = {
+        title: 'Callback Hell',
+        author: 'Max Ogden',
+        likes: 5
+      };
+
+      await api.post('/api/blogs')
+        .set('Authorization', `bearer ${token}`)
+        .send(newBlog)
+        .expect(400);  // 'Bad request'
+
+      const response = await api.get('/api/blogs');
+      expect(response.body).toHaveLength(helper.initialBlogs.length);
+    });
   });
 
-  test('blog without likes gets zero as default', async () => {
-    const newBlog = {
-      title: 'Callback Hell',
-      author: 'Max Ogden',
-      url: 'http://callbackhell.com/'
-    };
+  describe('without valid login', () => {
+    test('a blog with valid fields is not added and correct status code is returned', async () => {
+      const newBlog = {
+        title: 'Callback Hell',
+        author: 'Max Ogden',
+        url: 'http://callbackhell.com/',
+        likes: 5
+      };
 
-    const response = await api.post('/api/blogs').send(newBlog)
-      .expect(200)  // 'OK'
-      .expect('Content-Type', /application\/json/);
+      await api.post('/api/blogs')
+        //.set('Authorization', `bearer ${token}`)
+        .send(newBlog)
+        .expect(401);  // 'Unauthorized'
 
-    expect(response.body.likes).toEqual(0);
-  });
+      const response = await api.get('/api/blogs');
 
-  test('blog without title is not added', async () => {
-    const newBlog = {
-      author: 'Max Ogden',
-      url: 'http://callbackhell.com/',
-      likes: 5
-    };
-
-    await api.post('/api/blogs').send(newBlog)
-      .expect(400);  // 'Bad request'
-
-    const response = await api.get('/api/blogs');
-    expect(response.body).toHaveLength(helper.initialBlogs.length);
-  });
-
-  test('blog without url is not added', async () => {
-    const newBlog = {
-      title: 'Callback Hell',
-      author: 'Max Ogden',
-      likes: 5
-    };
-
-    await api.post('/api/blogs').send(newBlog)
-      .expect(400);  // 'Bad request'
-
-    const response = await api.get('/api/blogs');
-    expect(response.body).toHaveLength(helper.initialBlogs.length);
+      expect(response.body).toHaveLength(helper.initialBlogs.length);
+    });
   });
 });
 
 describe('deleting a blog', () => {
-  test('succeeds with valid id', async () => {
-    let response = await api.get('/api/blogs');
-    const blogsAtStart = response.body;
-    const blogToDelete = blogsAtStart[0];
 
-    await api.delete(`/api/blogs/${blogToDelete.id}`)
-      .expect(204);
-
-    response = await api.get('/api/blogs');
-    const blogsAtEnd = response.body;
-
-    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length - 1);
-
-    const titles = blogsAtEnd.map(blog => blog.title);
-    expect(titles).not.toContain(blogToDelete.title);
+  let blogToDelete;
+  beforeEach(async () => {
+    const newBlog = {
+      title: 'Callback Hell',
+      author: 'Max Ogden',
+      url: 'http://callbackhell.com/',
+      likes: 5
+    };
+    //Post a new blog as logged in user
+    const response = await api.post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
+      .send(newBlog);
+    blogToDelete = response.body;
   });
 
-  test('does nothing with valid id, but nonexistent', async () => {
-    let response = await api.get('/api/blogs');
-    const blogsAtStart = response.body;
-    const titlesAtStart = blogsAtStart.map(blog => blog.title);
+  describe('with valid login', () => {
 
-    await api.delete(`/api/blogs/${helper.nonExistentId}`)
-      .expect(404); //'Not found'
+    test('succeeds with valid id', async () => {
+      let response = await api.get('/api/blogs');
+      const blogsAtStart = response.body;
+      expect(blogsAtStart).toHaveLength(helper.initialBlogs.length + 1);
+      /*const blogToDelete = blogsAtStart[0];
+      console.log(blogsAtStart);
+      console.log(blogToDelete.id); */
+      await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .set('Authorization', `bearer ${token}`)
+        .expect(204);
 
-    response = await api.get('/api/blogs');
-    const blogsAtEnd = response.body;
+      response = await api.get('/api/blogs');
+      const blogsAtEnd = response.body;
 
-    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
 
-    const titlesAtEnd = blogsAtEnd.map(blog => blog.title);
-    expect(titlesAtEnd).toEqual(titlesAtStart);
+      const titles = blogsAtEnd.map(blog => blog.title);
+      expect(titles).not.toContain(blogToDelete.title);
+    });
+
+    test('does nothing with valid, but nonexistent id', async () => {
+      let response = await api.get('/api/blogs');
+      const blogsAtStart = response.body;
+      const titlesAtStart = blogsAtStart.map(blog => blog.title);
+
+      await api
+        .delete(`/api/blogs/${helper.nonExistentId}`)
+        .set('Authorization', `bearer ${token}`)
+        .expect(404); //'Not found'
+
+      response = await api.get('/api/blogs');
+      const blogsAtEnd = response.body;
+
+      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
+
+      const titlesAtEnd = blogsAtEnd.map(blog => blog.title);
+      expect(titlesAtEnd).toEqual(titlesAtStart);
+    });
+
+    test('returns correct status code and does nothing else with incorrectly formatted id', async () => {
+      let response = await api.get('/api/blogs');
+      const blogsAtStart = response.body;
+      const titlesAtStart = blogsAtStart.map(blog => blog.title);
+      const totallyWrongId = '123456';
+
+      await api
+        .delete(`/api/blogs/${totallyWrongId}`)
+        .set('Authorization', `bearer ${token}`)
+        .expect(400); //'Bad request'
+
+      response = await api.get('/api/blogs');
+      const blogsAtEnd = response.body;
+
+      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
+
+      const titlesAtEnd = blogsAtEnd.map(blog => blog.title);
+      expect(titlesAtEnd).toEqual(titlesAtStart);
+    });
   });
 
-  test('returns correct status code and does nothing else with incorrectly formatted id', async () => {
-    let response = await api.get('/api/blogs');
-    const blogsAtStart = response.body;
-    const titlesAtStart = blogsAtStart.map(blog => blog.title);
-    const totallyWrongId = '123456';
+  describe('without valid login', () => {
+    test('fails even with valid blog id', async () => {
+      let response = await api.get('/api/blogs');
+      const blogsAtStart = response.body;
+      const blogToDelete = blogsAtStart[0];
 
-    await api.delete(`/api/blogs/${totallyWrongId}`)
-      .expect(400); //'Bad request'
+      await api
+        //.set('Authorization', `bearer ${token}`)
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .expect(401); //'Unauthorized'
 
-    response = await api.get('/api/blogs');
-    const blogsAtEnd = response.body;
+      response = await api.get('/api/blogs');
+      const blogsAtEnd = response.body;
 
-    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length);
+      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1);
 
-    const titlesAtEnd = blogsAtEnd.map(blog => blog.title);
-    expect(titlesAtEnd).toEqual(titlesAtStart);
+      const titles = blogsAtEnd.map(blog => blog.title);
+      expect(titles).toContain(blogToDelete.title);
+    });
   });
 });
 
