@@ -1,6 +1,6 @@
 POST http://localhost:3001/api/blogs
 Content-Type: application/json
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1hdXJpZXJuZXN0aSIsImlkIjoiNWZlYzg5MzZhZGQzNTg3Mjk4NWM0NGIwIiwiaWF0IjoxNjA5NzgxMDU0fQ.-IISfZzUN2nsSA3JYUs2R9EBCyJoiHyRrmVfJT6RNm4
+Authorization: bearer xxx
 
 {
   "title": "Food blog",
@@ -13,7 +13,7 @@ Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1hd
 
 POST http://localhost:3001/api/blogs
 Content-Type: application/json
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im9qYXZhaXNhIiwiaWQiOiI1ZmVjODlkZmFkZDM1ODcyOTg1YzQ0YjEiLCJpYXQiOjE2MDk0MjIwMTl9.ux7Hv2OwQgMnjTr3mtHvDgrb8Fdvc_mqCSxokRq19W8
+Authorization: bearer xxx
 
 {
   "title": "Movie blog",
@@ -26,7 +26,7 @@ Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im9qY
 
 POST http://localhost:3001/api/blogs
 Content-Type: application/json
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im9qYXZhaXNhIiwiaWQiOiI1ZmVjODlkZmFkZDM1ODcyOTg1YzQ0YjEiLCJpYXQiOjE2MDk0MjIwMTl9.ux7Hv2OwQgMnjTr3mtHvDgrb8Fdvc_mqCSxokRq19W8
+Authorization: bearer xxx
 
 {
   "title": "Blog nobody likes",
