@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Blog from './components/Blog';
+import BlogForm from './components/BlogForm';
 import blogService from './services/blogs';
 import loginService from './services/login';
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
+  const [newBlogTitle, setNewBlogTitle] = useState('');
+  const [newBlogAuthor, setNewBlogAuthor] = useState('');
+  const [newBlogUrl, setNewBlogUrl] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
@@ -20,7 +24,7 @@ const App = () => {
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
       setUser(user);
-      //blogService.setToken(user.token);
+      blogService.setToken(user.token);
     }
   }, []); //empty list as a second parameter means that effect only performed only when component is rendered the first time
 
@@ -37,7 +41,8 @@ const App = () => {
         'loggedBlogappUser', JSON.stringify(user)
       );
 
-      setUser(user);  //loginService returns a user object that includes token 
+      setUser(user);  //loginService returns a user object that includes token
+      blogService.setToken(user.token);
       setUsername('');
       setPassword('');
     } catch (exception) {
@@ -50,17 +55,32 @@ const App = () => {
     setUser(null);
   };
 
-  // const addBlog = () => {
+  const addBlog = async (event) => {
+    event.preventDefault();
 
-  // };
+    const blogObject = {
+      title: newBlogTitle,
+      author: newBlogAuthor,
+      url: newBlogUrl,
+    };
 
-  // const newBlog = () => {
+    const response = await blogService.create(blogObject);
+    setBlogs(blogs.concat(response)); 
+    setNewBlogTitle('');
+    setNewBlogAuthor('');
+    setNewBlogUrl('');
 
-  // };
+  };
 
-  // const handleBlogChange = () => {
-
-  // };
+  const handleTitleChange = (event) => {
+    setNewBlogTitle(event.target.value);
+  };
+  const handleAuthorChange = (event) => {
+    setNewBlogAuthor(event.target.value);
+  };
+  const handleUrlChange = (event) => {
+    setNewBlogUrl(event.target.value);
+  };
 
   const loginForm = () => (
     <form onSubmit={handleLogin}>
@@ -86,16 +106,6 @@ const App = () => {
     </form>
   );
 
-  // const blogForm = () => (
-  //   <form onSubmit={addBlog}>
-  //     <input
-  //       value={newBlog}
-  //       onChange={handleBlogChange}
-  //     />
-  //     <button type="submit">Save</button>
-  //   </form>
-  // );
-
   return (
     <div>
       <h2>Blogs</h2>
@@ -104,6 +114,16 @@ const App = () => {
         loginForm() :   //show either loginForm
         <div>
           <p>{user.name} logged in <button type="button" onClick={handleLogout}>Logout</button> </p>
+          <h2>Create new</h2>
+          <BlogForm
+            addBlog={addBlog}
+            newTitle={newBlogTitle}
+            handleTitleChange={handleTitleChange}
+            newAuthor={newBlogAuthor}
+            handleAuthorChange={handleAuthorChange}
+            newUrl={newBlogUrl}
+            handleUrlChange={handleUrlChange}
+          />
           {blogs.map(blog =>
             <Blog key={blog.id} blog={blog} />
           )}
