@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Blog from './components/Blog';
 import BlogForm from './components/BlogForm';
+import Togglable from './components/Togglable';
 import blogService from './services/blogs';
 import loginService from './services/login';
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
-  const [newBlogTitle, setNewBlogTitle] = useState('');
-  const [newBlogAuthor, setNewBlogAuthor] = useState('');
-  const [newBlogUrl, setNewBlogUrl] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
@@ -55,33 +53,6 @@ const App = () => {
     setUser(null);
   };
 
-  const addBlog = async (event) => {
-    event.preventDefault();
-
-    const blogObject = {
-      title: newBlogTitle,
-      author: newBlogAuthor,
-      url: newBlogUrl,
-    };
-
-    const response = await blogService.create(blogObject);
-    setBlogs(blogs.concat(response)); 
-    setNewBlogTitle('');
-    setNewBlogAuthor('');
-    setNewBlogUrl('');
-
-  };
-
-  const handleTitleChange = (event) => {
-    setNewBlogTitle(event.target.value);
-  };
-  const handleAuthorChange = (event) => {
-    setNewBlogAuthor(event.target.value);
-  };
-  const handleUrlChange = (event) => {
-    setNewBlogUrl(event.target.value);
-  };
-
   const loginForm = () => (
     <form onSubmit={handleLogin}>
       <div>
@@ -106,28 +77,35 @@ const App = () => {
     </form>
   );
 
+  const blogFromRef = useRef(); //ref to use Togglable's visibility variable outside Togglable (namely in blogForm, to hide form when submitting)
+
+  const blogForm = () => (
+    <Togglable buttonLabel='New blog' ref={blogFromRef}>  {/* Blog form now only visible when toggled */}
+      <BlogForm createBlog={addBlog} />
+    </Togglable>
+  );
+
+  const addBlog = async (blogObject) => {
+
+    blogFromRef.current.toggleVisibility();
+    
+    const response = await blogService.create(blogObject);
+    setBlogs(blogs.concat(response));
+  };
+
   return (
     <div>
       <h2>Blogs</h2>
 
       {user === null ?  //depending on if user is logged in
         loginForm() :   //show either loginForm
-        <div>
+        <div>           {/* or name of user, button/form to add new blog and list of blogs */}
           <p>{user.name} logged in <button type="button" onClick={handleLogout}>Logout</button> </p>
-          <h2>Create new</h2>
-          <BlogForm
-            addBlog={addBlog}
-            newTitle={newBlogTitle}
-            handleTitleChange={handleTitleChange}
-            newAuthor={newBlogAuthor}
-            handleAuthorChange={handleAuthorChange}
-            newUrl={newBlogUrl}
-            handleUrlChange={handleUrlChange}
-          />
+          {blogForm()}
           {blogs.map(blog =>
             <Blog key={blog.id} blog={blog} />
           )}
-        </div>  // or name of user and list of blogs
+        </div>
       }
     </div>
   );
