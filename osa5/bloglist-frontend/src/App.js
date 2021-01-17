@@ -88,7 +88,7 @@ const App = () => {
   const addBlog = async (blogObject) => {
 
     blogFromRef.current.toggleVisibility();
-    
+
     const response = await blogService.create(blogObject);
     setBlogs(blogs.concat(response));
   };

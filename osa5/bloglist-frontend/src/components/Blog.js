@@ -1,8 +1,37 @@
-import React from 'react'
-const Blog = ({ blog }) => (
-  <div>
-    {blog.title} {blog.author}
-  </div>
-)
+import React, { useState } from 'react';
 
-export default Blog
+const Blog = ({ blog }) => {
+  const [viewFull, setViewFull] = useState(false);
+
+  const blogStyle = {
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 2,
+    border: 'solid',
+    borderWidth: 1,
+    marginBottom: 5,
+    marginTop: 10
+  };
+
+  //const hideWhenVisible = { display: visible ? 'none' : '' };
+  const showFullInfo = { display: viewFull ? '' : 'none' };
+
+  const toggleFullView = () => {
+    setViewFull(!viewFull);
+  };
+
+  return (
+    <div style={blogStyle}>
+      <div>
+        {blog.title} - {blog.author} <button onClick={toggleFullView}>{viewFull ? 'Hide' : 'View'}</button>
+      </div>
+      <div style={showFullInfo}>
+        <div>Site: {blog.url}</div>
+        <div>Likes {blog.likes} <button>Like</button></div>
+        <div>Added by: {blog.user.name}</div>
+      </div>
+    </div>
+  );
+};
+
+export default Blog;
