@@ -14,7 +14,9 @@ const App = () => {
   useEffect(() => {
     blogService.getAll().then(blogs =>
       setBlogs(blogs)
-    );
+    ).catch(error => {
+      console.log('There was an error getting initial blogs', error.message);
+    });
   }, []);
 
   useEffect(() => {
@@ -77,17 +79,17 @@ const App = () => {
     </form>
   );
 
-  const blogFromRef = useRef(); //ref to use Togglable's visibility variable outside Togglable (namely in blogForm, to hide form when submitting)
+  const blogFormRef = useRef(); //ref to use Togglable's visibility variable outside Togglable (namely in blogForm, to hide form when submitting)
 
   const blogForm = () => (
-    <Togglable buttonLabel='New blog' ref={blogFromRef}>  {/* Blog form now only visible when toggled */}
+    <Togglable buttonLabel='New blog' ref={blogFormRef}>  {/* Blog form now only visible when toggled */}
       <BlogForm createBlog={addBlog} />
     </Togglable>
   );
 
   const addBlog = async (blogObject) => {
 
-    blogFromRef.current.toggleVisibility();
+    blogFormRef.current.toggleVisibility();
 
     const response = await blogService.create(blogObject);
     setBlogs(blogs.concat(response));
