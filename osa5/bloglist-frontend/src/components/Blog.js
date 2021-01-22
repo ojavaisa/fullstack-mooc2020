@@ -20,14 +20,18 @@ const Blog = ({ blog }) => {
     setViewFull(!viewFull);
   };
 
+  const addLike = () => {
+    //nothing happens yet...
+  }
+
   return (
-    <div style={blogStyle}>
+    <div style={blogStyle} className='blog'>
       <div>
         {blog.title} - {blog.author} <button onClick={toggleFullView}>{viewFull ? 'Hide' : 'View'}</button>
       </div>
-      <div style={showFullInfo}>
+      <div style={showFullInfo} className='blogFullInfo'>
         <div>Site: {blog.url}</div>
-        <div>Likes {blog.likes} <button>Like</button></div>
+        <div>Likes {blog.likes} <button onClick={addLike}>Like</button></div>
         <div>Added by: {blog.user.name}</div>
       </div>
     </div>
