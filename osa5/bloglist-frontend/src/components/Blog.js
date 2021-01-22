@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Blog = ({ blog }) => {
+const Blog = ({ blog, addLike }) => {
   const [viewFull, setViewFull] = useState(false);
 
   const blogStyle = {
@@ -19,10 +19,6 @@ const Blog = ({ blog }) => {
   const toggleFullView = () => {
     setViewFull(!viewFull);
   };
-
-  const addLike = () => {
-    //nothing happens yet...
-  }
 
   return (
     <div style={blogStyle} className='blog'>

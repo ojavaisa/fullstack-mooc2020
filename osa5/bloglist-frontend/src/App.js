@@ -30,7 +30,7 @@ const App = () => {
 
   const handleLogin = async (event) => {
     event.preventDefault();
-    console.log('logging in with', username, password);
+    //console.log('logging in with', username, password);
 
     try {
       const user = await loginService.login({
@@ -95,6 +95,13 @@ const App = () => {
     setBlogs(blogs.concat(response));
   };
 
+  const addLike = async (likedBlog) => {
+    console.log(likedBlog);
+    const response = await blogService.addLike(likedBlog);
+    console.log(response);
+    setBlogs(blogs.map(blog => blog.id !== likedBlog.id ? blog : response));
+  }
+
   return (
     <div>
       <h2>Blogs</h2>
@@ -105,7 +112,7 @@ const App = () => {
           <p>{user.name} logged in <button type="button" onClick={handleLogout}>Logout</button> </p>
           {blogForm()}
           {blogs.map(blog =>
-            <Blog key={blog.id} blog={blog} />
+            <Blog key={blog.id} blog={blog} addLike={() => addLike(blog)}/>
           )}
         </div>
       }

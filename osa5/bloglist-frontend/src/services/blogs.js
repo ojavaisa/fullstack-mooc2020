@@ -21,9 +21,19 @@ const create = async newBlogObject => {
   return response.data;
 };
 
-// const update = (id, newObject) => {
-//   const request = axios.put(`${ baseUrl } /${id}`, newObject)
-//   return request.then(response => response.data)
-// }
+const addLike = async (blogObject) => {
+  const url = `${baseUrl}/${blogObject.id}`;
 
-export default { getAll, setToken, create };
+  const updatedBlog = {
+    title: blogObject.title,
+    author: blogObject.author,
+    url: blogObject.url,
+    likes: blogObject.likes + 1,
+    user: blogObject.user._id
+  };
+
+  const response = await axios.put(url, updatedBlog);
+  return response.data;   //updated blog is returned as response
+};
+
+export default { getAll, setToken, create, addLike };
