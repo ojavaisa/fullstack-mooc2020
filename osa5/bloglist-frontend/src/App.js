@@ -13,7 +13,7 @@ const App = () => {
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
-      setBlogs(blogs)
+      setBlogs(blogs.sort(compareLikes))
     ).catch(error => {
       console.log('There was an error getting initial blogs', error.message);
     });
@@ -92,15 +92,17 @@ const App = () => {
     blogFormRef.current.toggleVisibility();
 
     const response = await blogService.create(blogObject);
-    setBlogs(blogs.concat(response));
+    setBlogs(blogs.concat(response).sort(compareLikes));
   };
 
   const addLike = async (likedBlog) => {
     console.log(likedBlog);
     const response = await blogService.addLike(likedBlog);
     console.log(response);
-    setBlogs(blogs.map(blog => blog.id !== likedBlog.id ? blog : response));
-  }
+    setBlogs(blogs.map(blog => blog.id !== likedBlog.id ? blog : response).sort(compareLikes));
+  };
+
+  const compareLikes = (blogA, blogB) => blogB.likes - blogA.likes;
 
   return (
     <div>
@@ -112,7 +114,7 @@ const App = () => {
           <p>{user.name} logged in <button type="button" onClick={handleLogout}>Logout</button> </p>
           {blogForm()}
           {blogs.map(blog =>
-            <Blog key={blog.id} blog={blog} addLike={() => addLike(blog)}/>
+            <Blog key={blog.id} blog={blog} addLike={() => addLike(blog)} />
           )}
         </div>
       }
