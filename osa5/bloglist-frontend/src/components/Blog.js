@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const Blog = ({ blog, addLike }) => {
+const Blog = ({ blog, addLike, deleteBlog, showDelete }) => {
   const [viewFull, setViewFull] = useState(false);
 
   const blogStyle = {
@@ -15,6 +15,7 @@ const Blog = ({ blog, addLike }) => {
 
   //const hideWhenVisible = { display: visible ? 'none' : '' };
   const showFullInfo = { display: viewFull ? '' : 'none' };
+  const showDeleteButton = { display: showDelete ? '' : 'none' }
 
   const toggleFullView = () => {
     setViewFull(!viewFull);
@@ -29,6 +30,7 @@ const Blog = ({ blog, addLike }) => {
         <div>Site: {blog.url}</div>
         <div>Likes {blog.likes} <button onClick={addLike}>Like</button></div>
         <div>Added by: {blog.user.name}</div>
+        <div style={showDeleteButton}><button onClick={deleteBlog}>Remove</button></div>
       </div>
     </div>
   );

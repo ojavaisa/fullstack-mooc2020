@@ -96,13 +96,24 @@ const App = () => {
   };
 
   const addLike = async (likedBlog) => {
-    console.log(likedBlog);
     const response = await blogService.addLike(likedBlog);
-    console.log(response);
     setBlogs(blogs.map(blog => blog.id !== likedBlog.id ? blog : response).sort(compareLikes));
   };
 
   const compareLikes = (blogA, blogB) => blogB.likes - blogA.likes;
+
+  const deleteBlog = async (blogToDelete) => {
+    if (window.confirm(`Do you want to remove blog ${blogToDelete.title} by ${blogToDelete.author}?`)) {
+      try {
+        //blogService sends token and backend checks that the user is authorized to remove blog
+        await blogService.remove(blogToDelete);
+        setBlogs(blogs.filter(blog => blog.id !== blogToDelete.id).sort(compareLikes));
+      } catch (exception) {
+        console.log('There was an error deleting person', exception);
+      }
+    }
+
+  };
 
   return (
     <div>
@@ -114,7 +125,11 @@ const App = () => {
           <p>{user.name} logged in <button type="button" onClick={handleLogout}>Logout</button> </p>
           {blogForm()}
           {blogs.map(blog =>
-            <Blog key={blog.id} blog={blog} addLike={() => addLike(blog)} />
+            <Blog key={blog.id}
+              blog={blog}
+              addLike={() => addLike(blog)}
+              deleteBlog={() => deleteBlog(blog)}
+              showDelete={user.username === blog.user.username} />
           )}
         </div>
       }
