@@ -5,6 +5,7 @@ import Blog from './Blog';
 
 describe('Blog component', () => {
   let component;
+  let mockHandler;
 
   beforeEach(() => {
     const user = {
@@ -19,8 +20,10 @@ describe('Blog component', () => {
       user: user
     };
 
+    mockHandler = jest.fn();
+
     component = render(
-      <Blog blog={blog} />
+      <Blog blog={blog} addLike={mockHandler}/>
     );
 
   });
@@ -45,5 +48,14 @@ describe('Blog component', () => {
     fireEvent.click(button);
 
     expect(div).not.toHaveStyle('display: none');
+  });
+
+  test('pressing like twice fires the handler function the correct amount of times', () => {
+
+    const button = component.getByText('Like');
+    fireEvent.click(button);
+    fireEvent.click(button);
+
+    expect(mockHandler.mock.calls).toHaveLength(2);
   });
 });
