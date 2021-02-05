@@ -37,8 +37,27 @@ describe('Blog app', function () {
         .should('contain', 'wrong credentials')
         .and('have.css', 'color', 'rgb(255, 0, 0)')
         .and('have.css', 'border-style', 'solid'); */
-      
-      cy.get('html').should('not.contain', 'Mauri Ernesti logged in')
+
+      cy.get('html').should('not.contain', 'Mauri Ernesti logged in');
+    });
+  });
+
+  describe('When logged in', function () {
+    beforeEach(function () {
+      cy.get('#username').type('mauriernesti');
+      cy.get('#password').type('supersecret');
+      cy.get('#login-button').click();
+    });
+
+    it('A blog can be created', function () {
+      cy.contains('New blog').click();
+
+      cy.get('#title').type('Movie Blog');
+      cy.get('#author').type('Roger Ebert');
+      cy.get('#url').type('www.movieblog.com');
+      cy.get('#submit-button').click();
+
+      cy.get('html').contains('Movie Blog - Roger Ebert');  // NB! Format how blog title and author is displayed
     });
   });
 });
