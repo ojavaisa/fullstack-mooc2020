@@ -28,7 +28,7 @@ const Blog = ({ blog, addLike, deleteBlog, showDelete }) => {
       </div>
       <div style={showFullInfo} className='blogFullInfo'>
         <div>Site: {blog.url}</div>
-        <div>Likes {blog.likes} <button onClick={addLike}>Like</button></div>
+        <div>Likes: {blog.likes} <button onClick={addLike}>Like</button></div>
         <div>Added by: {blog.user.name}</div>
         <div style={showDeleteButton}><button onClick={deleteBlog}>Remove</button></div>
       </div>

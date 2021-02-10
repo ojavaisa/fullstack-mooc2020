@@ -6,7 +6,13 @@ describe('Blog app', function () {
       username: 'mauriernesti',
       password: 'supersecret'
     };
+    const differentUser = {
+      name: 'Olli Väisänen',
+      username: 'ojavaisa',
+      password: 'passw0rd'
+    };
     cy.request('POST', 'http://localhost:3001/api/users/', user);
+    cy.request('POST', 'http://localhost:3001/api/users/', differentUser);
     cy.visit('http://localhost:3000');
   });
 
@@ -44,12 +50,10 @@ describe('Blog app', function () {
 
   describe('When logged in', function () {
     beforeEach(function () {
-      cy.get('#username').type('mauriernesti');
-      cy.get('#password').type('supersecret');
-      cy.get('#login-button').click();
+      cy.login({ username: 'mauriernesti', password: 'supersecret' });
     });
 
-    it('A blog can be created', function () {
+    it('a blog can be created', function () {
       cy.contains('New blog').click();
 
       cy.get('#title').type('Movie Blog');
@@ -59,5 +63,44 @@ describe('Blog app', function () {
 
       cy.get('html').contains('Movie Blog - Roger Ebert');  // NB! Format how blog title and author is displayed
     });
+
+    describe('and blogs exist', function () {
+      beforeEach(function () {
+        cy.createBlog({ title: 'Test blog 1', author: 'Test author 1', url: 'www.test1.com' });
+        cy.createBlog({ title: 'Test blog 2', author: 'Test author 2', url: 'www.test2.com' });
+        cy.createBlog({ title: 'Test blog 3', author: 'Test author 3', url: 'www.test3.com' });
+      });
+
+      it('a blog can be liked', function () {
+        cy.contains('Test blog 1').parent().contains('View').click();
+        cy.contains('Likes:').find('button').as('likeButton');
+
+        cy.contains('Likes:').should('contain', '0');
+        cy.get('@likeButton').click();
+        cy.contains('Likes:').should('contain', '1');
+        cy.get('@likeButton').click();
+        cy.contains('Likes:').should('contain', '2');
+      });
+
+      it('logged in user can remove blog (they added)', function () {
+        cy.contains('Test blog 1').parent().contains('View').click();
+        cy.contains('Remove').click();
+        cy.get('html').should('not.contain', 'Test blog 1');
+      });
+
+      it('different user cannot remove blog', function () {
+        cy.contains('Logout').click();
+        cy.login({ username: 'ojavaisa', password: 'passw0rd' });
+
+        cy.contains('Test blog 1').parent().contains('View').click();
+
+        cy.contains('Remove').parent().should('have.css', 'display', 'none'); //check that button is not visible to user
+        cy.contains('Remove').click({ force: true }); //(attempt to) click the non-visible button anyway 
+        //check for error message here? error notificatins not yet implemented in frontend
+        cy.get('html').should('contain', 'Test blog 1');  //blog should not be removed 
+      });
+    });
+
+
   });
 });
