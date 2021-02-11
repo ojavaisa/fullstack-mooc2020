@@ -99,6 +99,37 @@ describe('Blog app', function () {
         //check for error message here? error notificatins not yet implemented in frontend
         cy.get('html').should('contain', 'Test blog 1');  //blog should not be removed 
       });
+
+      it('blogs are ordered according to likes', function () {
+        cy.contains('Test blog 1').parent().contains('View').click();
+        cy.contains('Test blog 2').parent().contains('View').click();
+        cy.contains('Test blog 3').parent().contains('View').click();
+
+        cy.contains('Test blog 1').parent().contains('Likes:').find('button').as('likeBtn1');
+        cy.contains('Test blog 2').parent().contains('Likes:').find('button').as('likeBtn2');
+        cy.contains('Test blog 3').parent().contains('Likes:').find('button').as('likeBtn3');
+
+        for (let i = 0; i < Math.floor(Math.random() * 7); i++) {  //click between 0 and 7, seven is of course the randomest number
+          cy.get('@likeBtn1').click();
+        }
+        for (let i = 0; i < Math.floor(Math.random() * 7); i++) {
+          cy.get('@likeBtn2').click();
+        }
+        for (let i = 0; i < Math.floor(Math.random() * 7); i++) {
+          cy.get('@likeBtn3').click();
+        }
+
+        cy.get('.blogFullInfo > div').then((divs) => {
+          //cy.log(divs);
+          const texts = [...divs].map(div => div.textContent);
+          //cy.log(texts)
+          const justLikeDivs = texts.filter((divText) => divText.startsWith('Likes:'));
+          //cy.log(justLikeDivs)
+          const nums = justLikeDivs.map(text => text.match(/\d+/));
+          //cy.log(nums);
+          cy.wrap(nums).should('equal', nums.sort((a, b) => b - a));
+        });
+      });
     });
 
 
