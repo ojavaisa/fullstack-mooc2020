@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Blog from './components/Blog';
 import BlogForm from './components/BlogForm';
+import Notification from './components/Notification';
 import Togglable from './components/Togglable';
 import blogService from './services/blogs';
 import loginService from './services/login';
@@ -10,6 +11,7 @@ const App = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -43,10 +45,11 @@ const App = () => {
 
       setUser(user);  //loginService returns a user object that includes token
       blogService.setToken(user.token);
+      showNotification('Login successful.');
       setUsername('');
       setPassword('');
     } catch (exception) {
-      //setErrorMessage
+      showNotification(`${exception.response.data.error}`, 'error');
     }
   };
 
@@ -81,6 +84,13 @@ const App = () => {
     </form>
   );
 
+  const showNotification = (message, type = 'notification') => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
+  };
+
   const blogFormRef = useRef(); //ref to use Togglable's visibility variable outside Togglable (namely in blogForm, to hide form when submitting)
 
   const blogForm = () => (
@@ -93,8 +103,14 @@ const App = () => {
 
     blogFormRef.current.toggleVisibility();
 
-    const response = await blogService.create(blogObject);
-    setBlogs(blogs.concat(response).sort(compareLikes));
+    try {
+      const response = await blogService.create(blogObject);
+      showNotification(`New blog ${blogObject.title} by ${blogObject.author} added.`);
+      setBlogs(blogs.concat(response).sort(compareLikes));
+    } catch (exception) {
+      showNotification(`${exception.response.data.error}`, 'error');
+    }
+
   };
 
   const addLike = async (likedBlog) => {
@@ -110,8 +126,10 @@ const App = () => {
         //blogService sends token and backend checks that the user is authorized to remove blog
         await blogService.remove(blogToDelete);
         setBlogs(blogs.filter(blog => blog.id !== blogToDelete.id).sort(compareLikes));
+        showNotification(`New blog ${blogToDelete.title} by ${blogToDelete.author} deleted.`);
       } catch (exception) {
-        console.log('There was an error deleting person', exception);
+        //console.log('There was an error deleting person', exception);
+        showNotification(`${exception.response.data.error}`, 'error');
       }
     }
 
@@ -120,6 +138,8 @@ const App = () => {
   return (
     <div>
       <h2>Blogs</h2>
+
+      <Notification notification={notification} />
 
       {user === null ?  //depending on if user is logged in
         loginForm() :   //show either loginForm
