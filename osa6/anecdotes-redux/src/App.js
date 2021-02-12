@@ -1,13 +1,15 @@
-import React from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import React from 'react';
+import { voteAnecdote } from './reducers/anecdoteReducer';
+import { useSelector, useDispatch } from 'react-redux';
 
 const App = () => {
-  const anecdotes = useSelector(state => state)
-  const dispatch = useDispatch()
+  const anecdotes = useSelector(state => state);
+  const dispatch = useDispatch();
 
   const vote = (id) => {
-    console.log('vote', id)
-  }
+    console.log('vote', id);
+    dispatch(voteAnecdote(id));
+  };
 
   return (
     <div>
@@ -29,7 +31,7 @@ const App = () => {
         <button>create</button>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;

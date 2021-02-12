@@ -5,25 +5,45 @@ const anecdotesAtStart = [
   'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
   'Premature optimization is the root of all evil.',
   'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.'
-]
+];
 
-const getId = () => (100000 * Math.random()).toFixed(0)
+const getId = () => (100000 * Math.random()).toFixed(0);
 
 const asObject = (anecdote) => {
   return {
     content: anecdote,
     id: getId(),
     votes: 0
-  }
-}
+  };
+};
 
-const initialState = anecdotesAtStart.map(asObject)
+const initialState = anecdotesAtStart.map(asObject);
+
+export const voteAnecdote = (id) => {
+  return {
+    type: 'VOTE',
+    data: { id }
+  };
+};
 
 const reducer = (state = initialState, action) => {
-  console.log('state now: ', state)
-  console.log('action', action)
+  console.log('state now: ', state);
+  console.log('action', action);
 
-  return state
-}
+  switch (action.type) {
+    case 'VOTE':
+      const id = action.data.id;
+      const anecdoteToChange = state.find(a => a.id === id);
+      const changedAnecdote = {
+        ...anecdoteToChange,
+        votes: anecdoteToChange.votes + 1
+      };
+      return state.map(anecdote => 
+        anecdote.id !== id ? anecdote : changedAnecdote
+      );
+    default:
+      return state;
+  }
+};
 
-export default reducer
+export default reducer;
