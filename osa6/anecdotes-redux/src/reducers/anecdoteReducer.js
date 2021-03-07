@@ -3,9 +3,10 @@ import anecdoteService from '../services/anecdotes';
 export const initializeAnecdotes = () => {
   return async dispatch => {
     const anecdotes = await anecdoteService.getAll();
+    const sortedAnecdotes = anecdotes.sort((a, b) => b.votes - a.votes)
     dispatch({
       type: 'INIT_ANECDOTES',
-      data: anecdotes
+      data: sortedAnecdotes
     });
   };
 };
