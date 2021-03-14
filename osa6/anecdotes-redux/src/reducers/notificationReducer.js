@@ -1,10 +1,16 @@
+var timeoutID;
+
 export const showNotification = (message, time) => {
   return async dispatch => {
+    //if a previous timeout exists, clear it, so there is no premature message clear for second notification
+    if (typeof timeoutID === 'number'){
+      clearTimeout(timeoutID);
+    }
     await dispatch({
       type: 'SET_NOTIFICATION',
       msg: message
     });
-    setTimeout(() => {
+    timeoutID = setTimeout(() => {
       dispatch({
         type: 'CLEAR_NOTIFICATION'
       });
